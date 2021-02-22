@@ -1,0 +1,110 @@
+import sounddevice as sd
+from scipy.io.wavfile import write
+from scipy.signal import filtfilt
+import scipy
+import scipy.io.wavfile as wav
+import matplotlib.pyplot as plt
+import numpy as np
+import numpy.fft as fft
+
+
+fs=44100 #sample rate
+
+########## RECORDING LIVE #########################################
+#seconds=4 #duration of recording
+#print('recording')
+#myrecording2=sd.rec(int(seconds*fs), samplerate=fs, channels=1) #Records
+#sd.wait()
+#print('finished recording')
+#sd.play(myrecording2) #UNCOMMENT IF YOU WANT TO HEAR THE RECORDING
+#sd.wait() #UNCOMMENT IF YOU WANT TO HEAR THE RECORDING
+#write('output2.wav',fs, myrecording2) #save as wav file called output2.wav
+#fs,x = wav.read('output2.wav') #fs = sampling frequency
+
+########## USING PRE-RECORDED .WAV FILE ######################
+fs,x = wav.read('Mary.wav') #fs = sampling frequency
+
+#sd.play(x,  fs) #UNCOMMENT IF YOU WANT TO HEAR THE RECORDING
+#sd.wait() #UNCOMMMENT IF YOU WANT TO HEAR THE RECORDING
+
+############## Plot 1: TIME DOMAIN
+t = fs/10000
+dPoints = x.size # Number of data points on x-axis\
+R = np.linspace(0,t, dPoints) # From 0 to t, to get it to the scale I want
+y = x/(2*fs) #djusting the y-axis to the input
+plt.subplot(3,1,1)
+plt.plot(R, y)
+plt.xlabel('t in seconds')
+plt.ylabel('f(t)')
+plt.show()
+
+############### Plot 2: Unfiltered signal
+X = fft.fft(x)
+N=X.size
+freqbin=np.linspace(0,fs,N);
+amp=np.abs(X)
+plt.subplot(3,1,2)
+plt.xlim([0, 4000])
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('abs(F(v))')
+plt.plot(freqbin, amp/30000)
+
+print('unfiltered pitch value =', round(freqbin[np.argmax(amp)],2), 'Hz')
+
+############### Signl With Lowpass filter ########################
+def Filter(signal):
+    #fs = 44100
+    lowcut = 70.0
+    highcut = 300.0
+    
+    nyq = 0.5*fs
+    low = lowcut/nyq
+    high = highcut/nyq
+    
+    order = 4
+    
+    b, a = scipy.signal.butter(order, [low,high], 'bandpass', analog=False)
+    yy = scipy.signal.filtfilt(b,a, signal, axis = 0)
+    
+    return(yy)
+
+def Filter2(signal):
+    #fs = 44100
+    lowcut = 70.0
+    highcut = 300.0
+    
+    nyq = 0.5*fs
+    low = lowcut/nyq
+    high = highcut/nyq
+    
+    order = 2
+    
+    b, a = scipy.signal.butter(order, [low,high], 'bandpass', analog=False)
+    yy = scipy.signal.filtfilt(b,a, signal, axis = 0)
+    
+    return(yy)
+
+plt.subplot(3,1,3)
+fx = Filter(x) #THIS CALLS ON THE FUNCTION TO FILTER THE RECORDING
+
+X2 = fft.fft(fx) #converting to freq domain, a complex value
+N2 = X2.size #taking the length of the sample
+freqbin2=np.linspace(0,fs,N2);
+amp2=np.abs(X2)/fs #taking only the magnitude portion of the complex value
+
+plt.xlim([0, 4000])
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('abs(F(v))')    
+plt.plot(freqbin2, amp2/30000)
+
+pitch = freqbin2[np.argmax(amp2)]
+
+if pitch > 300:
+    fx = Filter2(x)
+    X2 = fft.fft(fx)
+    amp2 = np.abs(X2)/fs
+    pitch = freqbin2[np.argmax(amp2)]
+    
+print('filtered pitch value =', round(pitch,2), 'Hz')
+
+plt.tight_layout()
