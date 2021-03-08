@@ -1,0 +1,39 @@
+'clear all, close all'
+
+from pydub import AudioSegment
+import matplotlib.pyplot as plt
+from tempfile import mktemp
+#import scipy
+import scipy.io.wavfile as wav
+import numpy as np
+
+
+
+############ Temporary Conversion of .mp3 to .wav
+mp3_audio = AudioSegment.from_file(path ='C:/Users/Jennifer/Downloads/', file = "Charlie.mp3") 
+wname = mktemp('.wav')  # use temporary file
+mp3_audio.export(wname, format="wav")  # convert to wav
+
+################# Plotting Amplitude vs. time
+fs,x = wav.read(wname) #fs = sampling frequency
+length = x.shape[0] / fs
+time = np.linspace(0., length, x.shape[0])
+plt.plot(time, x[:, 0], label="Left channel")
+plt.plot(time, x[:, 1], label="Right channel")
+#plt.legend()
+plt.xlabel("Time [s]")
+plt.ylabel("Amplitude")
+plt.show()
+
+###################################### To Check more info if needed
+#sound = AudioSegment.from_mp3('Charlie.mp3')
+#
+## get raw audio data as a bytestring
+#raw_data = sound.raw_data
+## get the frame rate
+#sample_rate = sound.frame_rate
+## get amount of bytes contained in one sample
+#sample_size = sound.sample_width
+## get channels
+#channels = sound.channels
+#####################################
