@@ -3,11 +3,11 @@
 from pydub import AudioSegment
 import matplotlib.pyplot as plt
 from tempfile import mktemp
-#import scipy
+import scipy
 import scipy.io.wavfile as wav
 import numpy as np
-
-
+import numpy.fft as fft
+from scipy.signal import filtfilt
 
 ############ Temporary Conversion of .mp3 to .wav
 mp3_audio = AudioSegment.from_file(path ='C:/Users/Jennifer/Downloads/', file = "Charlie.mp3") 
