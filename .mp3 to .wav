@@ -25,6 +25,20 @@ plt.xlabel("Time [s]")
 plt.ylabel("Amplitude")
 plt.show()
 
+############### Unfiltered pitch freq plot
+channel = x[:,0] #Reading info from just the first channel (mono)
+X = fft.fft(channel)
+N=X.shape[0]
+N = int(N)
+freqbin=np.linspace(0,fs,N);
+amp=np.abs(X)
+plt.subplot(3,1,2)
+plt.xlim([0, 4000])
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('abs(F(v))')
+plt.plot(freqbin, amp/30000)
+
+print('unfiltered pitch value =', round(freqbin[np.argmax(amp)],2), 'Hz')
 ###################################### To Check more info if needed
 #sound = AudioSegment.from_mp3('Charlie.mp3')
 #
