@@ -1,1 +1,195 @@
 # DASHBOARD FOR RESEARCHER TO INTERPRET
+
+import numpy as np
+import matplotlib.pyplot as plt
+import soundfile as sf
+import sounddevice as sd
+import scipy
+from scipy.io.wavfile import read
+from scipy.io.wavfile import write
+from IPython.display import Audio
+from scipy.io import wavfile as wav
+import numpy as np
+import numpy.fft as fft
+from scipy.signal import filtfilt
+
+# fs=44100
+# seconds=4 
+# recordings=['8am.wav','12pm.wav','4pm.wav','8pm.wav']
+# for i in range (4):
+#     rec = sd.rec(int(seconds*fs), samplerate=fs, channels=1)
+#     sd.wait()
+#     write(recordings[i],fs,rec)
+#     fs,x= wav.read(recordings[i])
+fs=44100
+
+def Filter(signal):
+    #fs = 44100
+    lowcut = 70.0
+    highcut = 300.0
+    
+    nyq = 0.5*fs
+    low = lowcut/nyq
+    high = highcut/nyq
+    
+    order = 4
+    
+    b, a = scipy.signal.butter(order, [low,high], 'bandpass', analog=False)
+    y = scipy.signal.filtfilt(b,a, signal, axis = 0)
+    
+    return(y)
+
+#%%
+#Xylabel=['8 am Recording','12 pm Recording','4 pm Recording','8 pm Recording'] # Y labels
+stitle=['8 am Recording','12 pm Recording','4 pm Recording','8 pm Recording']
+recordings=['1.wav','2.wav','3.wav','4.wav']
+plt.figure('External Microphone Feasability Testing - Time Domain',figsize=(8,8)) 
+for i in range(4):
+    plt.subplot(4,1,i+1)
+    fs,x = wav.read(recordings[i])
+    time = np.arange(len(x))/float(fs)
+    plt.plot(time,x)
+    plt.xlim(1,3)
+    plt.ylim(-0.25,0.25)
+    plt.title(stitle[i], fontsize=10)
+    plt.xlabel('Time (s)', fontsize=10)
+    plt.ylabel('Amplitude',fontsize=10)
+    plt.tight_layout()
+
+#%%
+
+plt.figure('External Microphone Feasability Testing - Frequency Domain',figsize=(8,8)) 
+recordings=['1.wav','3.wav','13.wav','16.wav']
+for i in range(4):
+    plt.subplot(2,2,i+1)
+    fs,x = wav.read(recordings[i])
+    fx = Filter(x)
+    X=fft.fft(fx)
+    N=X.size
+    freqbin=np.arange(0,N)/N*fs                           
+    plt.plot(freqbin,np.abs(X))
+    #plt.plot(freqbin,20*np.log10(np.abs(X))) # amplitude can be in dB
+    plt.xlim([0,fs/20])
+    plt.title(stitle[i]) 
+    plt.xlabel('Frequency (Hz)') 
+    plt.ylabel('Amplitude')
+    pitch=freqbin[np.argmax(np.abs(X))]
+    print('Fundamental Frequency (F0) =', freqbin[np.argmax(np.abs(X))], 'Hz')
+    pass
+    plt.tight_layout()
+    plt.show()
+    
+#%%
+stitle=['8 am Recording','12 pm Recording']
+recordings=['1.wav','2.wav']
+plt.figure('External Microphone Feasability Testing - Time Domain') 
+for i in range(2):
+    plt.subplot(2,1,i+1)
+    fs,x = wav.read(recordings[i])
+    time = np.arange(len(x))/float(fs)
+    plt.plot(time,x)
+    plt.xlim(1,3)
+    plt.ylim(-0.10,0.10)
+    plt.title(stitle[i], fontsize=15)
+    plt.xlabel('Time (s)', fontsize=15)
+    plt.ylabel('Amplitude',fontsize=15)
+    plt.tight_layout()
+# fs, data = read('headsetmicrophone_task_1.wav')
+
+# print("Sampling Frequency is", fs)
+
+# Audio(data, rate=fs)
+
+# plt.figure('External Microphone Feasability Testing')
+# plt.plot(data)
+# plt.xlabel('Sample Index')
+# plt.ylabel('Amplitude')
+# plt.title('Waveform of Sustained Vowel Task')
+# plt.show()
+
+
+#%%
+# fs = 44100
+# filename = 'biomarker.wav'
+# # Extract data and sampling rate from file
+# data, fs = sf.read(filename, dtype='float32')  
+
+# sd.play(data, fs)
+# status = sd.wait()  # Wait until file is done playing
+
+#%%
+
+# MAKING OF THE DASHBOARD
+
+import datetime as dt
+import matplotlib.dates as mdates 
+
+plt.figure('Weekly Dashpot For Researcher')
+
+dates = ['03/01/2021','03/02/2021','03/03/2021','03/04/2021','03/05/2021','03/06/2021','03/07/2021']
+
+y = [190,200,187,180,210,190,181]
+stdv=np.std(y) # Standard Deviation for Fundamental Frequency
+mean=np.mean(y)
+# Create error bar for the fundamental frequency
+
+plt.plot(dates,y,color='orange',linestyle='dashed',linewidth=1,marker='*',markerfacecolor='red',markersize=10)
+plt.ylabel('Fundamental Frequency F0 (Hz)',fontsize=20)
+plt.xlabel('Week 1 - Days',fontsize=20)
+plt.title('Patient 01234 Vocal Profile',fontsize=25)
+plt.errorbar(dates,y,stdv)
+plt.legend()
+plt.grid(color='lightgrey',linestyle='--')
+plt.show()
+
+#%%
+
+fig = plt.figure('FrontEnd - Monthly Dashpot',figsize=(10,8))
+
+dates = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+
+week_1 = [190,200,187,180,210,190,181]
+week_2 = [182,190,200,210,175,198,183]
+week_3 = [210,170,220,189,215,190,181]
+week_4 = [192,210,180,220,175,198,183]
+month = [week_1,week_2,week_3,week_4]
+stdv_1=np.std(week_1)
+stdv_2=np.std(week_2) # Standard Deviation for Fundamental Frequency
+
+mean_1=np.mean(week_1)
+mean_2=np.mean(week_2)
+# Create error bar for the fundamental frequency
+
+line_1 = plt.plot(dates,week_1,color='orange',linestyle='solid',
+         linewidth=1,marker='*',markerfacecolor='orange',markersize=10,label='Week 1')
+line_2 = plt.plot(dates,week_2,color='blue',linestyle='dashed',
+         linewidth=1,marker='*',markerfacecolor='blue',markersize=10,label='Week 2')
+line_3 = plt.plot(dates,week_3,color='red',linestyle='dashdot',
+         linewidth=1,marker='*',markerfacecolor='red',markersize=10,label='Week 3')
+line_4 = plt.plot(dates,week_4,color='green',linestyle='dotted',
+         linewidth=1,marker='*',markerfacecolor='green',markersize=10,label='Week 4')
+plt.ylabel('Fundamental Frequency F0 (Hz)',fontsize=20)
+plt.xlabel('Month of March - Days',fontsize=20)
+plt.title('Patient 01234 Vocal Profile',fontsize=25)
+# plt.errorbar(dates,week_1,stdv_1)
+# plt.errorbar(dates,week_2,stdv_2)
+# plt.legend((line_1, line_2), ('March Week 1','March Week 2'))
+plt.legend()
+plt.grid(color='lightgrey',linestyle='--')
+plt.show()
+
+fig2 = plt.figure('FrontEnd - Boxplot',figsize=(10,8))
+week_1 = [190,200,187,180,210,190,181]
+week_2 = [182,190,200,210,175,198,183]
+week_3 = [210,170,220,189,215,190,181]
+week_4 = [192,210,180,220,175,198,183]
+month = [week_1,week_2,week_3,week_4]
+plt.boxplot(month)
+plt.ylabel('Fundamental Frequency F0 (Hz)',fontsize=20)
+plt.xlabel('Month of March - Weeks',fontsize=20)
+plt.title('Patient 01234 Vocal Profile',fontsize=25)
+plt.legend(labels=['Week 1','Week 2','Week 3','Week 4'])
+plt.show
+#%%
+plt.figure('Another way of showing data', figsize=(10,8))
+plt.plot(dates,week_1)
