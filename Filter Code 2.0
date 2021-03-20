@@ -28,14 +28,12 @@ fs,x = wav.read('Mary.wav') #fs = sampling frequency
 #sd.wait() #UNCOMMMENT IF YOU WANT TO HEAR THE RECORDING
 
 ############## Plot 1: TIME DOMAIN
-t = fs/10000
-dPoints = x.size # Number of data points on x-axis\
-R = np.linspace(0,t, dPoints) # From 0 to t, to get it to the scale I want
-y = x/(2*fs) #djusting the y-axis to the input
 plt.subplot(3,1,1)
-plt.plot(R, y)
-plt.xlabel('t in seconds')
-plt.ylabel('f(t)')
+length = x.size / fs
+time = np.linspace(0., length, x.size)
+plt.plot(time, x)
+plt.xlabel("Time [s]")
+plt.ylabel("Amplitude")
 plt.show()
 
 ############### Plot 2: Unfiltered signal
